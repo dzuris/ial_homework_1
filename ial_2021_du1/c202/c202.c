@@ -73,10 +73,10 @@ void Stack_Error( int error_code ) {
  * @param stack Ukazatel na strukturu zásobníku
  */
 void Stack_Init( Stack *stack ) {
-	if(stack == NULL)
-		Stack_Error(SERR_INIT);
-	else
-		stack->topIndex = -1;
+    if(stack == NULL)
+        Stack_Error(SERR_INIT);
+    else
+	   stack->topIndex = -1;
 }
 
 /**
