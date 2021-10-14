@@ -221,7 +221,7 @@ char *infix2postfix( const char *infixExpression ) {
 			Stack_Push(stack, c);
 		} else if(c == ')'){
 			untilLeftPar(stack, postfixExpression, &postfixExpressionLength);
-		} else if(c == '+' || c == '-' || c == '*' || c == '/' || c == '^){
+		} else if(c == '+' || c == '-' || c == '*' || c == '/' || c == '^'){
 			doOperation(stack, c, postfixExpression, &postfixExpressionLength);
 		} else if(c == '='){
 			untilLeftPar(stack, postfixExpression, &postfixExpressionLength);
