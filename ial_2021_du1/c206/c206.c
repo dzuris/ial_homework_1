@@ -236,9 +236,15 @@ void DLL_DeleteFirst( DLList *list ) {
         DLLElementPtr element;
         element = list->firstElement;
 
-        // Change pointers
-        element->nextElement->previousElement = NULL;
-        list->firstElement = element->nextElement;
+        // if element is last then after delete list remains empty else change pointers
+        if(element == list->lastElement){
+            list->firstElement = NULL;
+            list->lastElement = NULL;
+            list->activeElement = NULL;
+        }else{
+            element->nextElement->previousElement = NULL;
+            list->firstElement = element->nextElement;
+        }
 
         free(element);
     }
@@ -262,9 +268,15 @@ void DLL_DeleteLast( DLList *list ) {
         DLLElementPtr element;
         element = list->lastElement;
 
-        // Change pointers
-        element->previousElement->nextElement = NULL;
-        list->lastElement = element->previousElement;
+        // if element is first then after delete list remains empty else change pointers
+        if(element == list->firstElement){
+            list->firstElement = NULL;
+            list->lastElement = NULL;
+            list->activeElement = NULL;
+        }else{
+            element->previousElement->nextElement = NULL;
+            list->lastElement = element->previousElement;
+        }
 
         free(element);
     }

@@ -55,15 +55,11 @@ int solved;
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpressionLength ) {
-	if(Stack_IsEmpty(stack)){
-		// If stack is empty we have to stop function due infinity loop
-		return;
-	}
 	/** 
 	* First we are going attach last symbol on stack to postfix exp and then pop char from stack
 	* We are repeating that until symbol on stack == '(' or until stack is empty to prevent infinite loop
 	*/  
-	while(stack->array[stack->topIndex] != '('){
+	while(!Stack_IsEmpty(stack) && stack->array[stack->topIndex] != '('){
 		char c;
 		Stack_Top(stack, &c);
 		postfixExpression[(*postfixExpressionLength)++] = c;
@@ -71,7 +67,7 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
 	}
 
 	// At last we pop the '(' from stack
-	Stack_Pop(stack);
+	if(!Stack_IsEmpty(stack)) Stack_Pop(stack);
 }
 
 /**
@@ -94,28 +90,8 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
 	// At first we have to find out priorities of last one character on stack (if there is some) and passed operation
 	int priority_top = 0, priority_c = 0;
 
-	// This one checks if there is something on stack and if yes then set precedence of that operand
-	if(!Stack_IsEmpty(stack)){ 
-		char top;
-		Stack_Top(stack, &top);
-		switch(top){
-			case '^':
-				priority_top = 3;
-				break;
-			case '*': case '/':
-				priority_top = 2;
-				break;
-			case '+': case '-':
-				priority_top = 1;
-				break;
-		}
-	}
-
 	// This one checks precedence of passed operand
 	switch(c){
-		case '^':
-			priority_c = 3;
-			break;
 		case '*': case '/':
 			priority_c = 2;
 			break;
@@ -124,25 +100,29 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
 			break;
 	}
 
+	int pushed = 0;
 	// Compare priorities in order to move operators from stack to postfix or pass operator on stack
-	/*if(priority_stack >= priority_c){
-		untilLeftPar(stack, postfixExpression, postfixExpressionLength);
-		Stack_Push(stack, c);
-	}else{
-		Stack_Push(stack, c);
-	}*/
-
-	if(Stack_IsEmpty(stack)){
-		Stack_Push(stack, c);
-	}else{
-		while(!Stack_IsEmpty(stack)){
+	while(pushed == 0){
+		if(Stack_IsEmpty(stack)){
+			Stack_Push(stack, c);
+			pushed = 1;
+		}else{
 			char top;
 			Stack_Top(stack, &top);
+
+			// This one checks if there is something on stack and if yes then set precedence of that operand
+			switch(top){
+				case '*': case '/':
+					priority_top = 2;
+					break;
+				case '+': case '-':
+					priority_top = 1;
+					break;
+			}	
 			if(top == '(' || priority_top < priority_c){
 				Stack_Push(stack, c);
-				break;
-			}
-			else{
+				pushed = 1;
+			}else{
 				postfixExpression[(*postfixExpressionLength)++] = top;
 				Stack_Pop(stack);
 			}
@@ -210,7 +190,6 @@ char *infix2postfix( const char *infixExpression ) {
 	stack = (Stack *) malloc(sizeof(Stack));
 	if(stack == NULL) return NULL;
 	Stack_Init(stack);
-	Stack_Push(stack, '(');
 
 	// Loop for every character in infix and transform expression to postfix
 	for(int i = 0; infixExpression[i] != '\0'; i++){
@@ -221,7 +200,7 @@ char *infix2postfix( const char *infixExpression ) {
 			Stack_Push(stack, c);
 		} else if(c == ')'){
 			untilLeftPar(stack, postfixExpression, &postfixExpressionLength);
-		} else if(c == '+' || c == '-' || c == '*' || c == '/' || c == '^'){
+		} else if(c == '+' || c == '-' || c == '*' || c == '/'){
 			doOperation(stack, c, postfixExpression, &postfixExpressionLength);
 		} else if(c == '='){
 			untilLeftPar(stack, postfixExpression, &postfixExpressionLength);
@@ -232,6 +211,8 @@ char *infix2postfix( const char *infixExpression ) {
 
 	// Free memory which was allocate for stack
 	free(stack);
+
+	postfixExpression[postfixExpressionLength++] = '\0';
 
 	return postfixExpression;
 }
