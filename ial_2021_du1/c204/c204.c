@@ -60,13 +60,13 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
 	* We are repeating that until symbol on stack == '(' or until stack is empty to prevent infinite loop
 	*/  
 	while(!Stack_IsEmpty(stack) && stack->array[stack->topIndex] != '('){
-		char c;
-		Stack_Top(stack, &c);
-		postfixExpression[(*postfixExpressionLength)++] = c;
+		char top;
+		Stack_Top(stack, &top);
+		postfixExpression[(*postfixExpressionLength)++] = top;
 		Stack_Pop(stack);
 	}
 
-	// At last we pop the '(' from stack
+	// At last we have to pop the '(' from stack
 	if(!Stack_IsEmpty(stack)) Stack_Pop(stack);
 }
 
@@ -87,10 +87,10 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postfixExpressionLength ) {
-	// At first we have to find out priorities of last one character on stack (if there is some) and passed operation
+	// At first we have to find out priority of last one character on stack (if there is some) and priority of passed operation
 	int priority_top = 0, priority_c = 0;
 
-	// This one checks precedence of passed operand
+	// This one checks priority of passed operator
 	switch(c){
 		case '*': case '/':
 			priority_c = 2;
@@ -100,32 +100,31 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
 			break;
 	}
 
-	int pushed = 0;
-	// Compare priorities in order to move operators from stack to postfix or pass operator on stack
-	while(pushed == 0){
-		if(Stack_IsEmpty(stack)){
-			Stack_Push(stack, c);
-			pushed = 1;
-		}else{
-			char top;
-			Stack_Top(stack, &top);
+	// If stack is empty we could pass the operator on stack
+	// else work with stack
+	if(Stack_IsEmpty(stack))
+		Stack_Push(stack, c);
+	else{
+		char top;
+		Stack_Top(stack, &top);
 
-			// This one checks if there is something on stack and if yes then set precedence of that operand
-			switch(top){
-				case '*': case '/':
-					priority_top = 2;
-					break;
-				case '+': case '-':
-					priority_top = 1;
-					break;
-			}	
-			if(top == '(' || priority_top < priority_c){
-				Stack_Push(stack, c);
-				pushed = 1;
-			}else{
-				postfixExpression[(*postfixExpressionLength)++] = top;
-				Stack_Pop(stack);
-			}
+		// set priority of operator on top of the stack
+		switch(top){
+			case '*': case '/':
+				priority_top = 2;
+				break;
+			case '+': case '-':
+				priority_top = 1;
+				break;
+		}	
+		// If on top of stack is '(' or priority top is less than priority c than we could pass the operator on stack
+		// else we move one operator from stack and pass it to the postfix, then call function recursively
+		if(top == '(' || priority_top < priority_c){
+			Stack_Push(stack, c);
+		}else{
+			postfixExpression[(*postfixExpressionLength)++] = top;
+			Stack_Pop(stack);
+			doOperation(stack, c, postfixExpression, postfixExpressionLength);
 		}
 	}
 }
@@ -186,6 +185,7 @@ char *infix2postfix( const char *infixExpression ) {
 
 	unsigned postfixExpressionLength = 0;
 
+	// allocate memory for stack, if allocating fail return null else initalize stack
 	Stack *stack;
 	stack = (Stack *) malloc(sizeof(Stack));
 	if(stack == NULL) return NULL;

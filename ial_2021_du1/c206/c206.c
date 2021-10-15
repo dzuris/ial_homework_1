@@ -116,6 +116,7 @@ void DLL_InsertFirst( DLList *list, int data ) {
     // Create new element and check if is valid
     DLLElementPtr element;
     element = malloc(sizeof(DLLElementPtr));
+    
     if(element == NULL){
         DLL_Error();
     }else{

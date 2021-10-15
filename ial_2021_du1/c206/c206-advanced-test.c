@@ -461,11 +461,8 @@ int main()	{
     test_DLL_IsActive();
     test_DLL_Last();
     test_DLL_GetLast();
-    printf("After last\n");
     test_DLL_DeleteLast();
-    printf("After delete last\n");
     test_DLL_IsActive();
-    printf("end\n");
 
                                   /* We concentrate on DLL_InsertLast function. */	
     printf("\n[TEST23]\n");
